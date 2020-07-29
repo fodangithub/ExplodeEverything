@@ -11,7 +11,7 @@ namespace ExplodeEverything
         {
             get
             {
-                return "ExplodeEverything";
+                return "ExplodeAnything";
             }
         }
         public override Bitmap Icon

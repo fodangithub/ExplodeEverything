@@ -74,6 +74,9 @@
   <ItemGroup>
     <None Include="iconfinder_Funny_132217.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="iconfinder_Bomb_132757.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

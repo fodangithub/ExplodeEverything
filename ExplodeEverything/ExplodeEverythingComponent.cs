@@ -35,9 +35,9 @@ namespace ExplodeEverything
         PropertyInfo[] propertiesArr;
 
         public ExplodeEverythingComponent()
-          : base("ExplodeEverything", "EE",
+          : base("ExplodeAnything", "EA",
               "Description",
-              "Math", "Playground")
+              "Math", "Explode")
         {
         }
 
@@ -161,10 +161,10 @@ namespace ExplodeEverything
                                 System.Collections.IEnumerable objEnum = (System.Collections.IEnumerable)obj;
                                 DA.SetDataList(ind, objEnum);
                             }
-                            //else if (t.Name.Contains("[]") && ind == 3)
-                            //{
-                            //    DA.SetDataList(ind, (IEnumerable)obj);
-                            //}
+                            else if (t.Name.Contains("[]") && ind == 3)
+                            {
+                                DA.SetDataList(ind, (IEnumerable)obj);
+                            }
                             else
                             {
                                 PropertyInfo pInfo = propertiesArr[ind - fieldsArr.Length];
@@ -251,7 +251,7 @@ namespace ExplodeEverything
             {
                 // You can add image files to your project resources and access them like this:
                 //return Resources.IconForThisComponent;
-                return Resources.iconfinder_Funny_132217;
+                return Resources.iconfinder_Bomb_132757;
             }
         }
 
