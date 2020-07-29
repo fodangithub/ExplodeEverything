@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -62,7 +63,7 @@ namespace ExplodeEverything
             {
                 this.Params.UnregisterOutputParameter(this.Params.Output[this.Params.Output.Count - 1]);
             }
-
+            
             this.Params.OnParametersChanged();
             this.VariableParameterMaintenance();
             this.ExpireSolution(true);
@@ -154,7 +155,32 @@ namespace ExplodeEverything
                         try
                         {
                             Params.Output[ind].NickName = propertiesArr[ind - fieldsArr.Length].Name;
-                            DA.SetData(ind, propertiesArr[ind - fieldsArr.Length].GetValue(obj));
+                            if (propertiesArr[ind - fieldsArr.Length].Name == "Item" &&
+                                (t.IsArray || (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>))))
+                            {
+                                System.Collections.IEnumerable objEnum = (System.Collections.IEnumerable)obj;
+                                DA.SetDataList(ind, objEnum);
+                            }
+                            //else if (t.Name.Contains("[]") && ind == 3)
+                            //{
+                            //    DA.SetDataList(ind, (IEnumerable)obj);
+                            //}
+                            else
+                            {
+                                PropertyInfo pInfo = propertiesArr[ind - fieldsArr.Length];
+                                if (pInfo.GetIndexParameters().Length == 0)
+                                {
+                                    DA.SetData(ind, pInfo.GetValue(obj));
+                                }
+                                else if (obj is IEnumerable)
+                                {
+                                    DA.SetDataList(ind, (IEnumerable)obj);
+                                }
+                                else
+                                {
+                                    DA.SetData(ind, obj);
+                                }
+                            }
                         }
                         catch
                         {
@@ -163,7 +189,6 @@ namespace ExplodeEverything
                     }
                 }
             }
-
         }
 
         public bool CanInsertParameter(GH_ParameterSide side, int index)
