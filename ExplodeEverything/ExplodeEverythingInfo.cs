@@ -19,7 +19,7 @@ namespace ExplodeEverything
             get
             {
                 //Return a 24x24 pixel bitmap to represent this GHA library.
-                return Resources.iconfinder_Funny_132217;
+                return Resources.iconfinder_Bomb_132757;
             }
         }
         public override string Description

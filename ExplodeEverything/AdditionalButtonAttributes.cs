@@ -10,7 +10,7 @@ using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Attributes;
 
-namespace GHToSAP2000
+namespace ExplodeAnything
 {
     class AdditionalButtonAttributes : GH_ComponentAttributes
     {

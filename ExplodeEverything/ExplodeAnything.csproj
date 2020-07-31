@@ -73,9 +73,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="iconfinder_Funny_132217.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="iconfinder_Bomb_132757.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

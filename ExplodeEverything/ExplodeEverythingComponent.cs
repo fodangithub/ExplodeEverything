@@ -1,27 +1,21 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Windows.Forms;
-using ExplodeEverything.Properties;
-using GHToSAP2000;
-using Grasshopper;
+﻿using ExplodeEverything.Properties;
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Types;
-using Rhino.Geometry;
-using Rhino.Render.Fields;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Windows.Forms;
 
 // In order to load the result of this wizard, you will also need to
 // add the output bin/ folder of this project to the list of loaded
 // folder in Grasshopper.
 // You can use the _GrasshopperDeveloperSettings Rhino command for that.
 
-namespace ExplodeEverything
+namespace ExplodeAnything
 {
-    public class ExplodeEverythingComponent : GH_Component, IGH_VariableParameterComponent
+    public class ExplodeAnythingComponent : GH_Component, IGH_VariableParameterComponent
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -35,7 +29,7 @@ namespace ExplodeEverything
         FieldInfo[] fieldsArr;
         PropertyInfo[] propertiesArr;
 
-        public ExplodeEverythingComponent()
+        public ExplodeAnythingComponent()
           : base("ExplodeAnything", "EA",
               "Description",
               "Math", "Explode")
@@ -69,7 +63,7 @@ namespace ExplodeEverything
             {
                 this.Params.UnregisterOutputParameter(this.Params.Output[this.Params.Output.Count - 1]);
             }
-            
+
             this.Params.OnParametersChanged();
             this.VariableParameterMaintenance();
             this.ExpireSolution(true);
