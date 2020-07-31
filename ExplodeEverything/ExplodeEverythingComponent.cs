@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using ExplodeEverything.Properties;
+using GHToSAP2000;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
@@ -39,6 +40,11 @@ namespace ExplodeEverything
               "Description",
               "Math", "Explode")
         {
+        }
+
+        public override void CreateAttributes()
+        {
+            m_attributes = new AdditionalButtonAttributes(this) { ButtonResponder = MatchResponder, TextLine = "BOOM" };
         }
 
         protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
@@ -158,7 +164,7 @@ namespace ExplodeEverything
                             if (propertiesArr[ind - fieldsArr.Length].Name == "Item" &&
                                 (t.IsArray || (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>))))
                             {
-                                System.Collections.IEnumerable objEnum = (System.Collections.IEnumerable)obj;
+                                IEnumerable objEnum = (IEnumerable)obj;
                                 DA.SetDataList(ind, objEnum);
                             }
                             else if (t.Name.Contains("[]") && ind == 3)
