@@ -1,4 +1,5 @@
-﻿using ExplodeEverything.Properties;
+﻿using ExplodeEverything;
+using ExplodeEverything.Properties;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Types;
@@ -28,7 +29,7 @@ namespace ExplodeAnything
         string typeName;
         FieldInfo[] fieldsArr;
         PropertyInfo[] propertiesArr;
-
+        private ExplodeAnythingComponentAttributes ThisAttribute { get => this.m_attributes as ExplodeAnythingComponentAttributes; }
         public ExplodeAnythingComponent()
           : base("ExplodeAnything", "EA",
               "Description",
@@ -38,7 +39,13 @@ namespace ExplodeAnything
 
         public override void CreateAttributes()
         {
-            m_attributes = new AdditionalButtonAttributes(this) { ButtonResponder = MatchResponder, TextLine = "BOOM" };
+            m_attributes = new ExplodeAnythingComponentAttributes(this)
+            {
+                ButtonResponder = MatchResponder,
+                ButtonText = "BOOM",
+                TextLine = new LongShortString { Long = "NULL", Short = "NULL" },
+                TextFont = new System.Drawing.Font(GH_FontServer.ScriptSmall, System.Drawing.FontStyle.Bold)
+            };
         }
 
         protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
@@ -52,14 +59,14 @@ namespace ExplodeAnything
             if (fieldsArr == null || propertiesArr == null)
                 return;
 
-            if (this.Params.Output.Count == fieldsArr.Length + propertiesArr.Length)
+            if (this.Params.Output.Count == fieldsArr.Length + propertiesArr.Length + 1)
                 return;
 
-            while (this.Params.Output.Count < fieldsArr.Length + propertiesArr.Length)
+            while (this.Params.Output.Count < fieldsArr.Length + propertiesArr.Length + 1)
             {
                 this.Params.RegisterOutputParam(new Param_GenericObject());
             }
-            while (this.Params.Output.Count > fieldsArr.Length + propertiesArr.Length)
+            while (this.Params.Output.Count > fieldsArr.Length + propertiesArr.Length + 1)
             {
                 this.Params.UnregisterOutputParameter(this.Params.Output[this.Params.Output.Count - 1]);
             }
@@ -82,7 +89,7 @@ namespace ExplodeAnything
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("", "", "", GH_ParamAccess.tree);
+            pManager.AddGenericParameter("Type", "T", "Object Type", GH_ParamAccess.item);
             this.VariableParameterMaintenance();
         }
 
@@ -130,11 +137,12 @@ namespace ExplodeAnything
             fieldsArr = t.GetFields(BindingFlags.GetField | BindingFlags.Instance | BindingFlags.Public);
             propertiesArr = t.GetProperties(BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public);
 
-            for (int ind = 0; ind < fieldsArr.Length + propertiesArr.Length; ++ind)
+            int maxIter = Math.Max(fieldsArr.Length + propertiesArr.Length, Params.Output.Count - 1);
+            for (int ind = 0; ind < maxIter; ++ind)
             {
                 if (ind >= fieldsArr.Length + propertiesArr.Length)
                 {
-                    this.Params.Output[ind].NickName = "?";
+                    this.Params.Output[ind+1].NickName = "--";
                 }
                 else
                 {
@@ -142,8 +150,8 @@ namespace ExplodeAnything
                     {
                         try
                         {
-                            Params.Output[ind].NickName = fieldsArr[ind].Name;
-                            DA.SetData(ind, fieldsArr[ind].GetValue(obj));
+                            Params.Output[ind+1].NickName = fieldsArr[ind].Name;
+                            DA.SetData(ind+1, fieldsArr[ind].GetValue(obj));
                         }
                         catch
                         {
@@ -154,31 +162,31 @@ namespace ExplodeAnything
                     {
                         try
                         {
-                            Params.Output[ind].NickName = propertiesArr[ind - fieldsArr.Length].Name;
+                            Params.Output[ind+1].NickName = propertiesArr[ind - fieldsArr.Length].Name;
                             if (propertiesArr[ind - fieldsArr.Length].Name == "Item" &&
                                 (t.IsArray || (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>))))
                             {
                                 IEnumerable objEnum = (IEnumerable)obj;
-                                DA.SetDataList(ind, objEnum);
+                                DA.SetDataList(ind+1, objEnum);
                             }
                             else if (t.Name.Contains("[]") && ind == 3)
                             {
-                                DA.SetDataList(ind, (IEnumerable)obj);
+                                DA.SetDataList(ind+1, (IEnumerable)obj);
                             }
                             else
                             {
                                 PropertyInfo pInfo = propertiesArr[ind - fieldsArr.Length];
                                 if (pInfo.GetIndexParameters().Length == 0)
                                 {
-                                    DA.SetData(ind, pInfo.GetValue(obj));
+                                    DA.SetData(ind+1, pInfo.GetValue(obj));
                                 }
                                 else if (obj is IEnumerable)
                                 {
-                                    DA.SetDataList(ind, (IEnumerable)obj);
+                                    DA.SetDataList(ind+1, (IEnumerable)obj);
                                 }
                                 else
                                 {
-                                    DA.SetData(ind, obj);
+                                    DA.SetData(ind+1, obj);
                                 }
                             }
                         }
@@ -189,6 +197,10 @@ namespace ExplodeAnything
                     }
                 }
             }
+            Params.Output[0].NickName = "Type";
+            DA.SetData(0, t);
+            // show object type text in the textline
+            ThisAttribute.TextLine = new LongShortString { Long = t.FullName, Short = t.Name };
         }
 
         public bool CanInsertParameter(GH_ParameterSide side, int index)
@@ -254,7 +266,6 @@ namespace ExplodeAnything
                 return Resources.iconfinder_Bomb_132757;
             }
         }
-
         /// <summary>
         /// Each component must have a unique Guid to identify it. 
         /// It is vital this Guid doesn't change otherwise old ghx files 
