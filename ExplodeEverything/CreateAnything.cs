@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
@@ -29,21 +30,28 @@ namespace ExplodeEverything
         protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
         {
             base.AppendAdditionalComponentMenuItems(menu);
-            if (objectConstructors.Length > 0)
+            if (objectConstructors != null && objectConstructors.Length > 0)
             {
                 for (int ind = 0; ind < objectConstructors.Length; ++ind)
                 {
                     ParameterInfo[] pInfos = objectConstructors[ind].GetParameters();
-                    StringBuilder sb = new StringBuilder();
-                    foreach (ParameterInfo p in pInfos)
-                    {
+                    string paramDescription = string.Join(", ", pInfos.Select(x => $"({x.ParameterType.Name}){x.Name}"));
 
-                    }
-                    Menu_AppendItem(menu, )
+                    Menu_AppendItem(menu, paramDescription); // TODO: add event receiver
                 }
             }
         }
 
+        // used for unregister the input parameter except the first one.
+        private void ClearParamExceptFirst()
+        {
+            int numberOfParameters = Params.Input.Count;
+            for (int index = numberOfParameters - 1; index > 0; index--)
+            {
+                Params.Input[index].RemoveAllSources();
+                Params.UnregisterInputParameter(Params.Input[index]);
+            }
+        }
         /// <summary>
         /// Registers all the input parameters for this component.
         /// </summary>
@@ -75,6 +83,12 @@ namespace ExplodeEverything
                 MatchInputs(objectType);
                 ExpireSolution(true);
             }
+            // TODO: 
+            // do not change layout when drag in the same type as before,
+            // 
+            // switch to no inputs if the type is different,
+            //
+            // if isValue type - treated differently if there is no constructors 
             object objectCreated = Activator.CreateInstance(objectType);
             DA.SetData(0, objectCreated);
         }
