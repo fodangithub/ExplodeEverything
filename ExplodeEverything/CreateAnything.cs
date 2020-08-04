@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Odbc;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using ExplodeEverything.Properties;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Parameters;
 using Rhino.Geometry;
 
 namespace ExplodeEverything
 {
-    public class CreateAnything : GH_Component
+    public class CreateAnything : GH_Component, IGH_VariableParameterComponent
     {
         bool objectPropertiesMatched;
         ConstructorInfo[] objectConstructors;
+        ParameterInfo[] constructorParams;
         int chosenConstructorIndex;
         /// <summary>
         /// Initializes a new instance of the MyComponent1 class.
@@ -25,6 +28,8 @@ namespace ExplodeEverything
         {
             objectPropertiesMatched = false;
             chosenConstructorIndex = -1;
+            objectConstructors = typeof(object).GetConstructors();
+            constructorParams = objectConstructors[0].GetParameters();
         }
 
         protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
@@ -35,11 +40,31 @@ namespace ExplodeEverything
                 for (int ind = 0; ind < objectConstructors.Length; ++ind)
                 {
                     ParameterInfo[] pInfos = objectConstructors[ind].GetParameters();
-                    string paramDescription = string.Join(", ", pInfos.Select(x => $"({x.ParameterType.Name}){x.Name}"));
-
-                    Menu_AppendItem(menu, paramDescription); // TODO: add event receiver
+                    if (pInfos.Length > 0)
+                    {
+                        string paramDescription = string.Join(", ", pInfos.Select(x => $"({x.ParameterType.Name}){x.Name}"));
+                        ToolStripMenuItem mItem = Menu_AppendItem(menu, paramDescription, ChooseConstructor); // TODO: add event receiver
+                        mItem.Tag = ind;
+                    }
                 }
             }
+        }
+
+        void ChooseConstructor(object o, EventArgs e)
+        {
+            int chosenInd = (int) ((o as ToolStripMenuItem).Tag);
+            constructorParams = objectConstructors[chosenInd].GetParameters();
+            if (constructorParams.Length < 1)
+                return;
+
+            ClearParamExceptFirst();
+            int ind = 0;
+            while (constructorParams.Length + 1 > Params.Input.Count)
+            {
+                Params.RegisterInputParam(new Param_GenericObject { NickName = constructorParams[ind++].Name, Optional = true });
+            }
+            Params.OnParametersChanged();
+            ExpireSolution(true);
         }
 
         // used for unregister the input parameter except the first one.
@@ -89,8 +114,11 @@ namespace ExplodeEverything
             // switch to no inputs if the type is different,
             //
             // if isValue type - treated differently if there is no constructors 
+            // 
+            // deal with objects that only have constructors with given parameters    e.g. Curve objects.
             object objectCreated = Activator.CreateInstance(objectType);
             DA.SetData(0, objectCreated);
+            objectPropertiesMatched = false;
         }
 
         void MatchInputs(Type t)
@@ -99,6 +127,11 @@ namespace ExplodeEverything
             if (objectConstructors.Length > 0)
                 chosenConstructorIndex = 0;
         }
+        public bool CanInsertParameter(GH_ParameterSide side, int index) => false;
+        public bool CanRemoveParameter(GH_ParameterSide side, int index) => false;
+        public IGH_Param CreateParameter(GH_ParameterSide side, int index) => new Grasshopper.Kernel.Parameters.Param_GenericObject();
+        public bool DestroyParameter(GH_ParameterSide side, int index) => true;
+        public void VariableParameterMaintenance() { }
 
         /// <summary>
         /// Provides an Icon for the component.
