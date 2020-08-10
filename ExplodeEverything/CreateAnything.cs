@@ -4,6 +4,7 @@ using System.Data.Odbc;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using ExplodeEverything.Properties;
 using Grasshopper.Kernel;
@@ -14,10 +15,11 @@ namespace ExplodeEverything
 {
     public class CreateAnything : GH_Component, IGH_VariableParameterComponent
     {
-        bool objectPropertiesMatched;
+        Type previewslyInputType;
         ConstructorInfo[] objectConstructors;
         ParameterInfo[] constructorParams;
         int chosenConstructorIndex;
+        Action actionToTakeAfterSolution;
         /// <summary>
         /// Initializes a new instance of the MyComponent1 class.
         /// </summary>
@@ -26,7 +28,6 @@ namespace ExplodeEverything
               "n/a",
               "Math", "Explode")
         {
-            objectPropertiesMatched = false;
             chosenConstructorIndex = -1;
             objectConstructors = typeof(object).GetConstructors();
             constructorParams = objectConstructors[0].GetParameters();
@@ -46,6 +47,11 @@ namespace ExplodeEverything
                         ToolStripMenuItem mItem = Menu_AppendItem(menu, paramDescription, ChooseConstructor); // TODO: add event receiver
                         mItem.Tag = ind;
                     }
+                    else
+                    {
+                        ToolStripMenuItem mItem = Menu_AppendItem(menu, $"From {previewslyInputType.Name} properties", ChooseConstructor); // TODO: add event receiver
+                        mItem.Tag = ind;
+                    }
                 }
             }
         }
@@ -53,18 +59,49 @@ namespace ExplodeEverything
         void ChooseConstructor(object o, EventArgs e)
         {
             int chosenInd = (int) ((o as ToolStripMenuItem).Tag);
+            chosenConstructorIndex = chosenInd;
             constructorParams = objectConstructors[chosenInd].GetParameters();
             if (constructorParams.Length < 1)
-                return;
-
-            ClearParamExceptFirst();
-            int ind = 0;
-            while (constructorParams.Length + 1 > Params.Input.Count)
             {
-                Params.RegisterInputParam(new Param_GenericObject { NickName = constructorParams[ind++].Name, Optional = true });
+                ClearParamExceptFirst();
+                PropertyInfo[] props = previewslyInputType.GetProperties(BindingFlags.GetField | BindingFlags.Instance | BindingFlags.Public);
+                FieldInfo[] fields = previewslyInputType.GetFields(BindingFlags.GetField | BindingFlags.Instance | BindingFlags.Public);
+                int ind = 0;
+                while (props.Length + fields.Length + 1 > Params.Input.Count)
+                {
+                    if (ind < fields.Length)
+                    {
+                        Params.RegisterInputParam(new Param_GenericObject
+                        {
+                            NickName = fields[ind].Name,
+                            Optional = true,
+                            Description = $"Type: {fields[ind].FieldType}"
+                        });
+                    }
+                    else
+                    {
+                        Params.RegisterInputParam(new Param_GenericObject
+                        {
+                            NickName = props[ind - fields.Length].Name,
+                            Optional = true,
+                            Description = $"Type: {props[ind - fields.Length].PropertyType}"
+                        });
+                    }
+                    ind++;
+                }
             }
-            Params.OnParametersChanged();
-            ExpireSolution(true);
+            else
+            {
+                ClearParamExceptFirst();
+                int ind = 0;
+                while (constructorParams.Length + 1 > Params.Input.Count)
+                {
+                    Params.RegisterInputParam(new Param_GenericObject { NickName = constructorParams[ind].Name, Optional = true, Description = $"Type: {constructorParams[ind].ParameterType}" });
+                    ind++;
+                }
+                Params.OnParametersChanged();
+                ExpireSolution(true);
+            }
         }
 
         // used for unregister the input parameter except the first one.
@@ -102,23 +139,71 @@ namespace ExplodeEverything
             Type objectType = typeof(object);
             if (!DA.GetData(0, ref objectType))
                 return;
-            if (!objectPropertiesMatched)
+            
+            if (objectType != previewslyInputType)
             {
-                objectPropertiesMatched = true;
-                MatchInputs(objectType);
-                ExpireSolution(true);
+                actionToTakeAfterSolution = () => MatchInputs(objectType);
+                return;
             }
-            // TODO: 
-            // do not change layout when drag in the same type as before,
-            // 
-            // switch to no inputs if the type is different,
-            //
-            // if isValue type - treated differently if there is no constructors 
-            // 
-            // deal with objects that only have constructors with given parameters    e.g. Curve objects.
-            object objectCreated = Activator.CreateInstance(objectType);
-            DA.SetData(0, objectCreated);
-            objectPropertiesMatched = false;
+            else
+            {
+                actionToTakeAfterSolution = null;
+            }
+
+            if (Params.Input.Count > 1 && constructorParams.Length > 0)
+            {
+                List<object> inputs = new List<object>();
+                for (int ind = 1; ind < Params.Input.Count; ind++)
+                {
+                    object inputParam = default(object);
+                    if (!DA.GetData(ind, ref inputParam))
+                    {
+                        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Input field {Params.Input[ind].NickName} failed to collect data.");
+                        return;
+                    }
+                    else
+                    {
+                        if (inputParam.GetType().Name.StartsWith("GH_"))
+                        {
+                            var in_ = inputParam.GetType().GetProperty("Value").GetValue(inputParam);
+                            inputs.Add(in_);
+                        }
+                        else
+                        {
+                            inputs.Add(inputParam);
+                        }
+                        
+                    }
+                }
+                // TODO: 
+                // do not change layout when drag in the same type as before,
+                // 
+                // switch to no inputs if the type is different,
+                //
+                // if isValue type - treated differently if there is no constructors 
+                // 
+                // deal with objects that only have constructors with given parameters    e.g. Curve objects.
+                
+                object objectCreated = Activator.CreateInstance(objectType, inputs.ToArray());
+                DA.SetData(0, objectCreated);
+            }
+            else if (Params.Input.Count > 1)
+            {
+                try
+                {
+                    object objectCreated = Activator.CreateInstance(objectType);
+                    DA.SetData(0, objectCreated);
+                }
+                catch
+                {
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{objectType} does not have constructor with 0 inputs");
+                    DA.SetData(0, null);
+                }
+            }
+            else
+            {
+                throw new Exception();
+            }
         }
 
         void MatchInputs(Type t)
@@ -126,12 +211,26 @@ namespace ExplodeEverything
             objectConstructors = t.GetConstructors();
             if (objectConstructors.Length > 0)
                 chosenConstructorIndex = 0;
+            previewslyInputType = t;
+            ClearParamExceptFirst();
+            Params.OnParametersChanged();
+            ExpireSolution(true);
         }
         public bool CanInsertParameter(GH_ParameterSide side, int index) => false;
         public bool CanRemoveParameter(GH_ParameterSide side, int index) => false;
         public IGH_Param CreateParameter(GH_ParameterSide side, int index) => new Grasshopper.Kernel.Parameters.Param_GenericObject();
         public bool DestroyParameter(GH_ParameterSide side, int index) => true;
         public void VariableParameterMaintenance() { }
+
+        protected override void AfterSolveInstance()
+        {
+            base.AfterSolveInstance();
+            if (actionToTakeAfterSolution != null)
+            {
+                actionToTakeAfterSolution.Invoke();
+            }
+        }
+        
 
         /// <summary>
         /// Provides an Icon for the component.

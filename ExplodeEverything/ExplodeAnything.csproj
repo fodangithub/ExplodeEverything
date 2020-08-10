@@ -56,6 +56,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArrayConstructor.cs" />
     <Compile Include="ExplodeAnythingComponentAttributes.cs" />
     <Compile Include="ExplodeEverythingComponent.cs" />
     <Compile Include="ExplodeEverythingInfo.cs" />
