@@ -150,7 +150,8 @@ namespace ExplodeAnything
                     {
                         try
                         {
-                            Params.Output[ind+1].NickName = fieldsArr[ind].Name;
+                            if (Params.Output[ind + 1].NickName != fieldsArr[ind].Name)
+                                Params.Output[ind+1].NickName = fieldsArr[ind].Name;
                             DA.SetData(ind+1, fieldsArr[ind].GetValue(obj));
                         }
                         catch
@@ -162,7 +163,8 @@ namespace ExplodeAnything
                     {
                         try
                         {
-                            Params.Output[ind+1].NickName = propertiesArr[ind - fieldsArr.Length].Name;
+                            if (Params.Output[ind + 1].NickName != propertiesArr[ind - fieldsArr.Length].Name)
+                                Params.Output[ind+1].NickName = propertiesArr[ind - fieldsArr.Length].Name;
                             if (propertiesArr[ind - fieldsArr.Length].Name == "Item" &&
                                 (t.IsArray || (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>))))
                             {
