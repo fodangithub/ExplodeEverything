@@ -56,12 +56,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArrayConstructor.cs" />
     <Compile Include="ExplodeAnythingComponentAttributes.cs" />
     <Compile Include="ExplodeEverythingComponent.cs" />
     <Compile Include="ExplodeEverythingInfo.cs" />
     <Compile Include="LongShortString.cs" />
-    <Compile Include="CreateAnything.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

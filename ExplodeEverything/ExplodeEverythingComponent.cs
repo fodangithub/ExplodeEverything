@@ -32,7 +32,7 @@ namespace ExplodeAnything
         private ExplodeAnythingComponentAttributes ThisAttribute { get => this.m_attributes as ExplodeAnythingComponentAttributes; }
         public ExplodeAnythingComponent()
           : base("ExplodeAnything", "EA",
-              "Description",
+              "Explode anything you want to peek inside",
               "Math", "Explode")
         {
         }
