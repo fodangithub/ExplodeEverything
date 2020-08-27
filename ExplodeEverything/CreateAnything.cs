@@ -155,7 +155,7 @@ namespace ExplodeEverything
                 List<object> inputs = new List<object>();
                 for (int ind = 1; ind < Params.Input.Count; ind++)
                 {
-                    object inputParam = default(object);
+                    object inputParam = default;
                     if (!DA.GetData(ind, ref inputParam))
                     {
                         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Input field {Params.Input[ind].NickName} failed to collect data.");
@@ -183,9 +183,49 @@ namespace ExplodeEverything
                 // if isValue type - treated differently if there is no constructors 
                 // 
                 // deal with objects that only have constructors with given parameters    e.g. Curve objects.
+
+                object objectCreated = default;
+                switch (Params.Input.Count)
+                {
+                    case 2:
+                        objectCreated = Activator.CreateInstance(objectType, inputs[0]);
+                        break;
+                    case 3:
+                        objectCreated = Activator.CreateInstance(objectType, inputs[0], inputs[1]);
+                        break;
+                    case 4:
+                        objectCreated = Activator.CreateInstance(objectType, inputs[0], inputs[1], inputs[2]);
+                        break;
+                    case 5:
+                        objectCreated = Activator.CreateInstance(objectType, inputs[0], inputs[1], inputs[2], inputs[3]);
+                        break;
+                    case 6:
+                        objectCreated = Activator.CreateInstance(objectType, inputs[0], inputs[1], inputs[2], inputs[3], inputs[4]);
+                        break;
+                    case 7:
+                        objectCreated = Activator.CreateInstance(objectType, inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5]);
+                        break;
+                    case 8:
+                        objectCreated = Activator.CreateInstance(objectType, inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5], inputs[6]);
+                        break;
+                    case 9:
+                        objectCreated = Activator.CreateInstance(objectType, inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5], inputs[6], inputs[7]);
+                        break;
+                    case 10:
+                        objectCreated = Activator.CreateInstance(objectType, inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5], inputs[6], inputs[7], inputs[8]);
+                        break;
+                    case 11:
+                        objectCreated = Activator.CreateInstance(objectType, inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5], inputs[6], inputs[7], inputs[8], inputs[9]);
+                        break;
+                    default:
+                        throw new Exception($"constructors that takes more than 10 input parameters are not currently supported");
+                }
                 
-                object objectCreated = Activator.CreateInstance(objectType, inputs.ToArray());
-                DA.SetData(0, objectCreated);
+
+                if (objectCreated != null)
+                    DA.SetData(0, objectCreated);
+                else
+                    throw new Exception($" failed to create an instance of {previewslyInputType}");
             }
             else if (Params.Input.Count > 1)
             {

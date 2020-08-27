@@ -55,7 +55,6 @@ namespace ExplodeAnything
 
             if (channel == GH_CanvasChannel.Objects)
             {
-
                 GH_Capsule buttonCapsule = GH_Capsule.CreateTextCapsule(buttonRectangle, buttonRectangle, GH_Palette.Grey, ButtonText);
                 buttonCapsule.Render(graphics, Selected, attributeOwner.Locked, false);
                 buttonCapsule.Dispose();
@@ -70,6 +69,7 @@ namespace ExplodeAnything
                     graphics.DrawString(TextLine.Long, TextFont, Brushes.Black, textRectangle, format);
                 else 
                     graphics.DrawString(TextLine.Short, TextFont, Brushes.Black, textRectangle, format);
+                format.Dispose();
             }
         }
 
@@ -87,7 +87,7 @@ namespace ExplodeAnything
                     }
                 }
             }
-            return base.RespondToMouseDown(sender, e);
+            return base.RespondToMouseUp(sender, e);
         }
     }
 }
