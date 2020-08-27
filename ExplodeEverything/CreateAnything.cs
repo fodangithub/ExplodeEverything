@@ -20,6 +20,13 @@ namespace ExplodeEverything
         ParameterInfo[] constructorParams;
         int chosenConstructorIndex;
         Action actionToTakeAfterSolution;
+
+        ////// Possible functions that could create an instance of desired type:
+        ///    1. Constructors with params
+        ///    2. Constructors without params - create an empty class with all properties set to default
+        ///    3. Static functions of that Type 
+
+
         /// <summary>
         /// Initializes a new instance of the MyComponent1 class.
         /// </summary>
@@ -55,7 +62,6 @@ namespace ExplodeEverything
                 }
             }
         }
-
         void ChooseConstructor(object o, EventArgs e)
         {
             int chosenInd = (int) ((o as ToolStripMenuItem).Tag);
@@ -64,8 +70,8 @@ namespace ExplodeEverything
             if (constructorParams.Length < 1)
             {
                 ClearParamExceptFirst();
-                PropertyInfo[] props = previewslyInputType.GetProperties(BindingFlags.GetField | BindingFlags.Instance | BindingFlags.Public);
-                FieldInfo[] fields = previewslyInputType.GetFields(BindingFlags.GetField | BindingFlags.Instance | BindingFlags.Public);
+                PropertyInfo[] props = previewslyInputType.GetProperties(BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.Public);
+                FieldInfo[] fields = previewslyInputType.GetFields(BindingFlags.SetField | BindingFlags.Instance | BindingFlags.Public);
                 int ind = 0;
                 while (props.Length + fields.Length + 1 > Params.Input.Count)
                 {
@@ -183,6 +189,8 @@ namespace ExplodeEverything
                 // if isValue type - treated differently if there is no constructors 
                 // 
                 // deal with objects that only have constructors with given parameters    e.g. Curve objects.
+                //
+                // deal with the static function of a class which may provide a instance of that class as output
 
                 object objectCreated = default;
                 switch (Params.Input.Count)
