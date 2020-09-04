@@ -105,9 +105,9 @@ namespace ExplodeEverything
                     Params.RegisterInputParam(new Param_GenericObject { NickName = constructorParams[ind].Name, Optional = true, Description = $"Type: {constructorParams[ind].ParameterType}" });
                     ind++;
                 }
-                Params.OnParametersChanged();
-                ExpireSolution(true);
             }
+            Params.OnParametersChanged();
+            ExpireSolution(true);
         }
 
         // used for unregister the input parameter except the first one.
@@ -120,6 +120,7 @@ namespace ExplodeEverything
                 Params.UnregisterInputParameter(Params.Input[index]);
             }
         }
+
         /// <summary>
         /// Registers all the input parameters for this component.
         /// </summary>
@@ -148,7 +149,8 @@ namespace ExplodeEverything
             
             if (objectType != previewslyInputType)
             {
-                actionToTakeAfterSolution = () => MatchInputs(objectType);
+                OnPingDocument().RequestAbortSolution();
+                MatchInputs(objectType);
                 return;
             }
             else
@@ -250,7 +252,7 @@ namespace ExplodeEverything
             }
             else
             {
-                throw new Exception();
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Params.Input.Count = 1");
             }
         }
 
@@ -261,8 +263,7 @@ namespace ExplodeEverything
                 chosenConstructorIndex = 0;
             previewslyInputType = t;
             ClearParamExceptFirst();
-            Params.OnParametersChanged();
-            ExpireSolution(true);
+            OnPingDocument().ScheduleSolution(1);
         }
         public bool CanInsertParameter(GH_ParameterSide side, int index) => false;
         public bool CanRemoveParameter(GH_ParameterSide side, int index) => false;

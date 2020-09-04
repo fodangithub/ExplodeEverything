@@ -157,6 +157,7 @@ namespace ExplodeAnything
                         catch
                         {
                             AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Some fields were failed to explode, check answer carefully");
+                            break;
                         }
                     }
                     else
@@ -195,6 +196,7 @@ namespace ExplodeAnything
                         catch
                         {
                             AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Some fields were failed to explode, check answer carefully");
+                            break;
                         }
                     }
                 }
