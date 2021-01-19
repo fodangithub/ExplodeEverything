@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Drawing;
-using ExplodeEverything.Properties;
+using ExplodeAnything.Properties;
 using Grasshopper.Kernel;
 
-namespace ExplodeEverything
+namespace ExplodeAnything
 {
     public class ExplodeEverythingInfo : GH_AssemblyInfo
     {

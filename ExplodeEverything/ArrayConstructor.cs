@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 
-namespace ExplodeEverything
+namespace ExplodeAnything
 {
     public class ArrayConstructor : GH_Component
     {
@@ -13,7 +13,7 @@ namespace ExplodeEverything
         /// </summary>
         public ArrayConstructor()
           : base("ArrayConstructor", "AC",
-              "n/a",
+              "Put a series of data into an Array",
               "Math", "Explode")
         {
         }
@@ -79,7 +79,7 @@ namespace ExplodeEverything
             {
                 //You can add image files to your project resources and access them like this:
                 // return Resources.IconForThisComponent;
-                return null;
+                return ExplodeAnything.Properties.Resources.arrayu;
             }
         }
 

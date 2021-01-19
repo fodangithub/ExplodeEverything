@@ -6,20 +6,22 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using ExplodeEverything.Properties;
+using ExplodeAnything.Properties;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
+using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
 
-namespace ExplodeEverything
+namespace ExplodeAnything
 {
     public class CreateAnything : GH_Component, IGH_VariableParameterComponent
     {
-        Type previewslyInputType;
+        Type previewslyInputType = typeof(object);
         ConstructorInfo[] objectConstructors;
         ParameterInfo[] constructorParams;
         int chosenConstructorIndex;
         Action actionToTakeAfterSolution;
+
 
         ////// Possible functions that could create an instance of desired type:
         ///    1. Constructors with params
@@ -32,7 +34,7 @@ namespace ExplodeEverything
         /// </summary>
         public CreateAnything()
           : base("CreateAnything", "CA",
-              "n/a",
+              "Let's build something",
               "Math", "Explode")
         {
             chosenConstructorIndex = -1;
@@ -54,7 +56,7 @@ namespace ExplodeEverything
                         ToolStripMenuItem mItem = Menu_AppendItem(menu, paramDescription, ChooseConstructor); // TODO: add event receiver
                         mItem.Tag = ind;
                     }
-                    else
+                    else if (previewslyInputType != typeof(object))
                     {
                         ToolStripMenuItem mItem = Menu_AppendItem(menu, $"From {previewslyInputType.Name} properties", ChooseConstructor); // TODO: add event receiver
                         mItem.Tag = ind;
@@ -143,15 +145,23 @@ namespace ExplodeEverything
         /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+
             Type objectType = typeof(object);
             if (!DA.GetData(0, ref objectType))
                 return;
             
             if (objectType != previewslyInputType)
             {
-                OnPingDocument().RequestAbortSolution();
-                MatchInputs(objectType);
-                return;
+                //OnPingDocument().RequestAbortSolution();
+                if (RunCount < 2)
+                {
+                    actionToTakeAfterSolution = () => MatchInputs(objectType);
+                    return;
+                }
+                else
+                {
+                    throw new ArgumentException("'Type' cannot have different types inputs");
+                }
             }
             else
             {
@@ -184,9 +194,9 @@ namespace ExplodeEverything
                     }
                 }
                 // TODO: 
-                // do not change layout when drag in the same type as before,
+                // (checked) do not change layout when drag in the same type as before,
                 // 
-                // switch to no inputs if the type is different,
+                // (checked) switch to no inputs if the type is different,
                 //
                 // if isValue type - treated differently if there is no constructors 
                 // 
@@ -252,7 +262,7 @@ namespace ExplodeEverything
             }
             else
             {
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Params.Input.Count = 1");
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Use menu to choose one type of constructor");
             }
         }
 
@@ -263,7 +273,7 @@ namespace ExplodeEverything
                 chosenConstructorIndex = 0;
             previewslyInputType = t;
             ClearParamExceptFirst();
-            OnPingDocument().ScheduleSolution(1);
+            OnPingDocument().ScheduleSolution(1, (o) => this.ExpireSolution(false));
         }
         public bool CanInsertParameter(GH_ParameterSide side, int index) => false;
         public bool CanRemoveParameter(GH_ParameterSide side, int index) => false;
@@ -279,7 +289,6 @@ namespace ExplodeEverything
                 actionToTakeAfterSolution.Invoke();
             }
         }
-        
 
         /// <summary>
         /// Provides an Icon for the component.

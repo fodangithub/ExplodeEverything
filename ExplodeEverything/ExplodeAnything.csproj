@@ -8,8 +8,8 @@
     <ProjectGuid>{89A5AFF4-1129-4C7D-B7B4-8E90FC169D56}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ExplodeEverything</RootNamespace>
-    <AssemblyName>ExplodeEverything</AssemblyName>
+    <RootNamespace>ExplodeAnything</RootNamespace>
+    <AssemblyName>ExplodeAnything</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
@@ -30,6 +30,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -77,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="iconfinder_Bomb_132757.png" />
+    <None Include="Resources\arrayu.png" />
     <Content Include="Script.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -88,7 +92,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>Copy "$(TargetPath)" "$(TargetDir)$(ProjectName).gha"
+    <PostBuildEvent>Copy "$(TargetPath)" "C:\Users\2208\AppData\Roaming\Grasshopper\Libraries\VS_dummies\$(ProjectName).gha"
 Erase "$(TargetPath)"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>

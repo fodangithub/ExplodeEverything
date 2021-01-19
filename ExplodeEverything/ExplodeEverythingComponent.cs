@@ -1,5 +1,5 @@
-﻿using ExplodeEverything;
-using ExplodeEverything.Properties;
+﻿using ExplodeAnything;
+using ExplodeAnything.Properties;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Types;
@@ -32,7 +32,7 @@ namespace ExplodeAnything
         private ExplodeAnythingComponentAttributes ThisAttribute { get => this.m_attributes as ExplodeAnythingComponentAttributes; }
         public ExplodeAnythingComponent()
           : base("ExplodeAnything", "EA",
-              "Description",
+              "Deconstruct anything you want!",
               "Math", "Explode")
         {
         }
